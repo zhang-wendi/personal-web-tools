@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>官网链接拼接工具</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9; /* 浅灰色背景 */
+            color: #333;
+        }
+
+        /* 标题 */
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 输入框样式 */
+        input[type="text"] {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+            input[type="text"] {
+                width: 100%;
+            }
+            table {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>官网链接拼接工具</h1>
+    <label for="url">请输入链接:</label>
+    <input type="text" id="url" placeholder="例如 https://www.lovense.com">
+    <br>
+    <label for="utm_pro">请输入_utm_pro参数:</label>
+    <input type="text" id="utm_pro" placeholder="例如 12345678">
+    <br>
+    <button onclick="generateLinks()">生成链接</button>
+    <br><br>
+    <table id="resultsTable"></table>
+
+    <script>
+        function generateLinks() {
+            var url = document.getElementById("url").value;
+            var utmPro = document.getElementById("utm_pro").value;
+            var table = document.getElementById("resultsTable");
+
+            // 清空表格
+            table.innerHTML = '';
+
+            // 创建表头
+            var thead = table.createTHead();
+            var headerRow = thead.insertRow();
+            var headers = ['广告位置', '携带官网登录态', '中台问卷'];
+            headers.forEach(function(headerText) {
+                var headerCell = document.createElement('th');
+                headerCell.textContent = headerText;
+                headerRow.appendChild(headerCell);
+            });
+
+            // 检查URL是否已经包含查询参数
+            var separator = (url.indexOf('?') === -1) ? '?' : '&';
+
+            // 如果_utm_pro不为空，则添加到基础查询字符串
+            var baseQueryString = '';
+            if (utmPro) {
+                baseQueryString = '_utm_pro=' + encodeURIComponent(utmPro);
+            }
+
+            // 填充表格数据
+            var adPositions = ['Home页Banner', '官方账号', 'Discover广告位'];
+            adPositions.forEach(function(adPosition) {
+                var row = table.insertRow();
+                var cellAdPosition = row.insertCell(0);
+                var cellOfficialUrl = row.insertCell(1);
+                var cellQnUrl = row.insertCell(2);
+
+                cellAdPosition.textContent = adPosition;
+
+                // 官方账号链接
+                var officialUrl = url + (baseQueryString ? separator + baseQueryString : '');
+                if (adPosition === 'Home页Banner') {
+                    officialUrl += '&web_cam=1';
+                }
+                cellOfficialUrl.textContent = officialUrl;
+
+                // 中台问卷链接
+                var qnUrl = adPosition === 'Home页Banner' ? officialUrl.replace('&web_cam=1', '&web_qn=1') : officialUrl;
+                cellQnUrl.textContent = qnUrl;
+            });
+        }
+    </script>
+</body>
+</html>

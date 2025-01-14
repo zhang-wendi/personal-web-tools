@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9; /* 浅灰色背景 */
+            color: #333;
+        }
+
+        /* 工具按钮容器 */
+        .tools {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 简约黑白按钮样式 */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold; /* 加粗效果 */
+            color: #333; /* 黑色文字 */
+            background-color: transparent; /* 透明背景 */
+            border: 2px solid #333; /* 黑色边框 */
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #333; /* 悬停时黑色背景 */
+            color: #fff; /* 悬停时白色文字 */
+        }
+
+        .button:active {
+            transform: scale(0.98); /* 点击时轻微缩小 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 工具按钮 -->
+    <div class="tools">
+        <a href="website-link-combine.html" class="button">官网链接拼接工具</a>
+        <a href="timezone.html" class="button">时区转换工具</a>
+        <a href="#" class="button">工具 3</a>
+    </div>
+</body>
+</html>

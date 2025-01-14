@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时区转换工具</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9; /* 浅灰色背景 */
+            color: #333;
+        }
+
+        /* 标题 */
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 输入框样式 */
+        input[type="text"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+            input[type="text"] {
+                width: 100%;
+            }
+            table {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>时区转换工具</h1>
+    <label for="input">请输入北京时间 (格式: YYYY-MM-DD HH:mm:ss) 或时间戳:</label>
+    <input type="text" id="input" placeholder="例如 2025-01-01 12:00:00 或 1735704000000">
+    <br>
+    <button onclick="convertTime()">转换</button>
+
+    <!-- 结果表格 -->
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>类型</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>时间戳</td>
+                <td id="timestamp"></td>
+            </tr>
+            <tr>
+                <td>北京时间</td>
+                <td id="beijing-time"></td>
+            </tr>
+            <tr>
+                <td>UTC 标准时间</td>
+                <td id="utc-time"></td>
+            </tr>
+            <tr>
+                <td>美国东部时间 (EST)</td>
+                <td id="est-time"></td>
+            </tr>
+            <tr>
+                <td>芝加哥时间 (CST)</td>
+                <td id="cst-time"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function convertTime() {
+            const input = document.getElementById("input").value.trim();
+            if (!input) {
+                alert("请输入有效的北京时间或时间戳！");
+                return;
+            }
+
+            let date;
+            if (/^\d+$/.test(input)) {
+                // 输入是时间戳
+                date = new Date(parseInt(input));
+            } else {
+                // 输入是北京时间
+                date = new Date(input + " GMT+0800");
+            }
+
+            if (isNaN(date.getTime())) {
+                alert("输入格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式或时间戳！");
+                return;
+            }
+
+            // 转换为时间戳
+            const timestamp = date.getTime();
+            document.getElementById("timestamp").textContent = timestamp;
+
+            // 定义时间格式化函数
+            function formatTime(date, timeZone) {
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false, // 使用24小时制
+                    timeZone: timeZone
+                }).replace(/\//g, '-'); // 将斜杠替换为短横线
+            }
+
+            // 转换为其他时区时间
+            document.getElementById("beijing-time").textContent = formatTime(date, 'Asia/Shanghai'); // 北京时间
+            document.getElementById("utc-time").textContent = formatTime(date, 'UTC'); // UTC 时间
+            document.getElementById("est-time").textContent = formatTime(date, 'America/New_York'); // 美国东部时间
+            document.getElementById("cst-time").textContent = formatTime(date, 'America/Chicago'); // 芝加哥时间
+        }
+    </script>
+</body>
+</html>
