@@ -21,21 +21,11 @@
             color: #333;
         }
 
-        /* 输入框样式 */
-        input[type="text"] {
-            width: 100%;
-            max-width: 300px;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        /* 提示信息 */
+        .hint {
+            margin-bottom: 20px;
+            color: #666;
             font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            border-color: #007BFF;
-            outline: none;
         }
 
         /* 按钮样式 */
@@ -48,6 +38,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin: 10px 0;
         }
 
         button:hover {
@@ -80,25 +71,50 @@
             background-color: #f9f9f9;
         }
 
+        /* 输入框样式 */
+        input[type="text"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* 高亮最后修改的输入框 */
+        .last-modified {
+            border-color: #28a745;
+            background-color: #f8fff8;
+        }
+
         /* 响应式设计 */
         @media (max-width: 600px) {
             h1 {
                 font-size: 24px;
             }
-            input[type="text"] {
-                width: 100%;
-            }
             table {
                 font-size: 14px;
+            }
+            th, td {
+                padding: 8px;
             }
         }
     </style>
 </head>
 <body>
     <h1>时区转换工具</h1>
-    <label for="input">请输入北京时间 (格式: YYYY-MM-DD HH:mm:ss) 或时间戳:</label>
-    <input type="text" id="input" placeholder="例如 2025-01-01 12:00:00 或 1735704000000">
-    <br>
+    
+    <div class="hint">
+        <p>在任意时区行输入时间，点击"转换"按钮，即可查看其他时区对应时间</p>
+    </div>
+    
     <button onclick="convertTime()">转换</button>
 
     <!-- 结果表格 -->
@@ -111,73 +127,194 @@
         </thead>
         <tbody>
             <tr>
-                <td>时间戳</td>
-                <td id="timestamp"></td>
+                <td>时间戳 (毫秒)</td>
+                <td><input type="text" id="timestamp-input" placeholder="例如: 1735704000000" oninput="markAsLastModified(this)"></td>
             </tr>
             <tr>
                 <td>北京时间</td>
-                <td id="beijing-time"></td>
+                <td><input type="datetime-local" id="beijing-input" step="1" oninput="markAsLastModified(this)"></td>
             </tr>
             <tr>
                 <td>UTC 标准时间</td>
-                <td id="utc-time"></td>
+                <td><input type="datetime-local" id="utc-input" step="1" oninput="markAsLastModified(this)"></td>
             </tr>
             <tr>
                 <td>美国东部时间 (EST)</td>
-                <td id="est-time"></td>
+                <td><input type="datetime-local" id="est-input" step="1" oninput="markAsLastModified(this)"></td>
             </tr>
             <tr>
                 <td>芝加哥时间 (CST)</td>
-                <td id="cst-time"></td>
+                <td><input type="datetime-local" id="cst-input" step="1" oninput="markAsLastModified(this)"></td>
             </tr>
         </tbody>
     </table>
 
     <script>
+        // 记录最后修改的输入框
+        let lastModifiedInput = null;
+        
+        // 标记最后修改的输入框
+        function markAsLastModified(inputElement) {
+            // 移除之前的高亮
+            if (lastModifiedInput) {
+                lastModifiedInput.classList.remove('last-modified');
+            }
+            
+            // 设置新的最后修改输入框
+            lastModifiedInput = inputElement;
+            inputElement.classList.add('last-modified');
+        }
+        
+        // 页面加载时设置当前时间
+        window.onload = function() {
+            const now = new Date();
+            setDateTimeInputs(now);
+            
+            // 默认设置北京时间为最后修改
+            lastModifiedInput = document.getElementById("beijing-input");
+            lastModifiedInput.classList.add('last-modified');
+        };
+        
+        // 将Date对象格式化为datetime-local输入格式 (YYYY-MM-DDTHH:mm:ss)
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 设置所有datetime-local输入框的值
+        function setDateTimeInputs(date) {
+            document.getElementById("timestamp-input").value = date.getTime();
+            
+            // 为各时区设置datetime-local值
+            const beijingTime = new Date(date);
+            document.getElementById("beijing-input").value = formatDateTimeLocal(beijingTime);
+            
+            const utcTime = new Date(date);
+            document.getElementById("utc-input").value = formatDateTimeLocal(utcTime);
+            
+            const estTime = new Date(date);
+            document.getElementById("est-input").value = formatDateTimeLocal(estTime);
+            
+            const cstTime = new Date(date);
+            document.getElementById("cst-input").value = formatDateTimeLocal(cstTime);
+        }
+        
+        // 从datetime-local输入中解析日期
+        function parseDateTimeLocal(value, timeZoneOffset) {
+            if (!value) return null;
+            
+            // 创建基于本地时区的日期对象
+            const localDate = new Date(value);
+            if (isNaN(localDate.getTime())) return null;
+            
+            // 调整为UTC时间
+            const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+            
+            // 调整为目标时区
+            return new Date(utcDate.getTime() + timeZoneOffset * 60000);
+        }
+
         function convertTime() {
-            const input = document.getElementById("input").value.trim();
-            if (!input) {
-                alert("请输入有效的北京时间或时间戳！");
+            if (!lastModifiedInput) {
+                alert("请先在任意时区输入时间！");
                 return;
             }
-
+            
             let date;
-            if (/^\d+$/.test(input)) {
-                // 输入是时间戳
-                date = new Date(parseInt(input));
-            } else {
-                // 输入是北京时间
-                date = new Date(input + " GMT+0800");
+            
+            // 根据最后修改的输入框进行转换
+            switch (lastModifiedInput.id) {
+                case "timestamp-input":
+                    const timestampInput = lastModifiedInput.value.trim();
+                    if (!timestampInput || !/^\d+$/.test(timestampInput)) {
+                        alert("时间戳格式不正确，请输入数字！");
+                        return;
+                    }
+                    date = new Date(parseInt(timestampInput));
+                    break;
+                    
+                case "beijing-input":
+                    // 北京时间 (UTC+8)
+                    date = parseDateTimeLocal(lastModifiedInput.value, 8 * 60);
+                    if (!date) {
+                        alert("北京时间格式不正确！");
+                        return;
+                    }
+                    break;
+                    
+                case "utc-input":
+                    // UTC时间
+                    date = parseDateTimeLocal(lastModifiedInput.value, 0);
+                    if (!date) {
+                        alert("UTC时间格式不正确！");
+                        return;
+                    }
+                    break;
+                    
+                case "est-input":
+                    // 美国东部时间 (UTC-5)
+                    date = parseDateTimeLocal(lastModifiedInput.value, -5 * 60);
+                    if (!date) {
+                        alert("美国东部时间格式不正确！");
+                        return;
+                    }
+                    break;
+                    
+                case "cst-input":
+                    // 芝加哥时间 (UTC-6)
+                    date = parseDateTimeLocal(lastModifiedInput.value, -6 * 60);
+                    if (!date) {
+                        alert("芝加哥时间格式不正确！");
+                        return;
+                    }
+                    break;
+                    
+                default:
+                    alert("未知的时间输入类型！");
+                    return;
             }
 
             if (isNaN(date.getTime())) {
-                alert("输入格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式或时间戳！");
+                alert("输入格式不正确，请检查后重试！");
                 return;
             }
 
-            // 转换为时间戳
-            const timestamp = date.getTime();
-            document.getElementById("timestamp").textContent = timestamp;
-
-            // 定义时间格式化函数
-            function formatTime(date, timeZone) {
-                return date.toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false, // 使用24小时制
-                    timeZone: timeZone
-                }).replace(/\//g, '-'); // 将斜杠替换为短横线
+            // 更新除最后修改的输入框外的所有输入框
+            updateOtherInputs(date);
+        }
+        
+        // 更新除最后修改输入框外的所有其他输入框
+        function updateOtherInputs(date) {
+            // 时间戳输入框
+            if (lastModifiedInput.id !== "timestamp-input") {
+                document.getElementById("timestamp-input").value = date.getTime();
             }
-
-            // 转换为其他时区时间
-            document.getElementById("beijing-time").textContent = formatTime(date, 'Asia/Shanghai'); // 北京时间
-            document.getElementById("utc-time").textContent = formatTime(date, 'UTC'); // UTC 时间
-            document.getElementById("est-time").textContent = formatTime(date, 'America/New_York'); // 美国东部时间
-            document.getElementById("cst-time").textContent = formatTime(date, 'America/Chicago'); // 芝加哥时间
+            
+            // 北京时间输入框
+            if (lastModifiedInput.id !== "beijing-input") {
+                document.getElementById("beijing-input").value = formatDateTimeLocal(date);
+            }
+            
+            // UTC时间输入框
+            if (lastModifiedInput.id !== "utc-input") {
+                document.getElementById("utc-input").value = formatDateTimeLocal(date);
+            }
+            
+            // EST时间输入框
+            if (lastModifiedInput.id !== "est-input") {
+                document.getElementById("est-input").value = formatDateTimeLocal(date);
+            }
+            
+            // CST时间输入框
+            if (lastModifiedInput.id !== "cst-input") {
+                document.getElementById("cst-input").value = formatDateTimeLocal(date);
+            }
         }
     </script>
 </body>
