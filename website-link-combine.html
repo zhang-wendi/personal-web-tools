@@ -4,113 +4,383 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>官网链接拼接工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 全局样式 */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9; /* 浅灰色背景 */
-            color: #333;
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --input-border: #ddd;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #f2f8fd;
+            --table-border: #eaeaea;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition-speed: 0.3s;
         }
 
-        /* 标题 */
+        [data-theme="dark"] {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --bg-color: #1a1a1a;
+            --card-bg: #2c3e50;
+            --input-border: #34495e;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #34495e;
+            --table-border: #2c3e50;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .theme-switch {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-switch:hover {
+            transform: scale(1.1);
+        }
+
         h1 {
             font-size: 28px;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
-        /* 输入框样式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .input-field {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--primary-color);
+        }
+
         input[type="text"] {
             width: 100%;
-            max-width: 500px;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius);
             font-size: 14px;
-            transition: border-color 0.3s ease;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         input[type="text"]:focus {
-            border-color: #007BFF;
+            border-color: var(--input-focus);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
 
-        /* 按钮样式 */
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            color: #fff;
-            background-color: #007BFF;
+        .btn {
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            background-color: var(--primary-color);
             border: none;
-            border-radius: 5px;
+            border-radius: var(--radius);
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
-        /* 表格样式 */
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
         table {
             width: 100%;
-            max-width: 800px;
+            table-layout: fixed;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 15px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        
+        table th:nth-child(1) {
+            width: 20%;
+        }
+        
+        table th:nth-child(2), 
+        table th:nth-child(3) {
+            width: 35%;
+        }
+        
+        table th:nth-child(4) {
+            width: 10%;
         }
 
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--table-border);
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: var(--table-header);
             font-weight: 600;
-            color: #333;
+            color: var(--text-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
         }
 
         tr:hover {
-            background-color: #f9f9f9;
+            background-color: rgba(52, 152, 219, 0.05);
         }
 
-        /* 响应式设计 */
-        @media (max-width: 600px) {
+        .url-cell {
+            min-width: 280px;
+            word-break: break-all;
+            word-wrap: break-word;
+            white-space: normal;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            padding: 12px;
+            background-color: rgba(52, 152, 219, 0.05);
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.5;
+            position: relative;
+        }
+        
+        /* 链接前缀高亮 */
+        .url-cell .highlight-domain {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        /* 链接参数高亮 */
+        .url-cell .highlight-param {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            margin-left: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary-dark);
+        }
+
+        .highlight {
+            background-color: rgba(46, 204, 113, 0.2);
+            transition: background-color 1s ease;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            border-top: 1px solid var(--table-border);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+            
             h1 {
                 font-size: 24px;
             }
-            input[type="text"] {
-                width: 100%;
-            }
-            table {
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 10px 6px;
                 font-size: 14px;
+            }
+            
+            input[type="text"] {
+                padding: 10px 10px 10px 35px;
+            }
+            
+            .input-icon {
+                left: 10px;
+            }
+            
+            .url-cell {
+                min-width: auto;
+                font-size: 11px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
             }
         }
     </style>
 </head>
 <body>
-    <h1>官网链接拼接工具</h1>
-    <label for="url">请输入链接:</label>
-    <input type="text" id="url" placeholder="例如 https://www.lovense.com">
-    <br>
-    <label for="utm_pro">请输入_utm_pro参数:</label>
-    <input type="text" id="utm_pro" placeholder="例如 12345678">
-    <br>
-    <button onclick="generateLinks()">生成链接</button>
-    <br><br>
-    <table id="resultsTable"></table>
+    <div class="container">
+        <header>
+            <button class="theme-switch" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+            <h1>官网链接拼接工具</h1>
+            <p class="subtitle">快速生成和管理营销链接</p>
+        </header>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="url"><i class="fas fa-link"></i> 请输入链接:</label>
+                <div class="input-field">
+                    <i class="fas fa-globe input-icon"></i>
+                    <input type="text" id="url" placeholder="例如 https://www.lovense.com">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="utm_pro"><i class="fas fa-tag"></i> 请输入_utm_pro参数:</label>
+                <div class="input-field">
+                    <i class="fas fa-code input-icon"></i>
+                    <input type="text" id="utm_pro" placeholder="例如 12345678">
+                </div>
+            </div>
+
+            <button class="btn" onclick="generateLinks()">
+                <i class="fas fa-magic"></i> 生成链接
+            </button>
+        </div>
+
+        <div class="card" id="results-card" style="display: none;">
+            <table id="resultsTable"></table>
+        </div>
+
+        <footer>
+            <!-- &copy; <span id="year"></span> 链接拼接工具 | 高效快捷地生成营销链接 -->
+        </footer>
+    </div>
 
     <script>
         function generateLinks() {
-            var url = document.getElementById("url").value;
-            var utmPro = document.getElementById("utm_pro").value;
+            var url = document.getElementById("url").value.trim();
+            var utmPro = document.getElementById("utm_pro").value.trim();
             var table = document.getElementById("resultsTable");
+            var resultsCard = document.getElementById("results-card");
+
+            // 验证URL
+            if (!url) {
+                alert("请输入有效的URL!");
+                return;
+            }
+
+            // 显示结果卡片
+            resultsCard.style.display = "block";
 
             // 清空表格
             table.innerHTML = '';
@@ -118,12 +388,15 @@
             // 创建表头
             var thead = table.createTHead();
             var headerRow = thead.insertRow();
-            var headers = ['广告位置', '携带官网登录态', '中台问卷'];
+            var headers = ['广告位置', '携带官网登录态', '中台问卷', '操作'];
             headers.forEach(function(headerText) {
                 var headerCell = document.createElement('th');
                 headerCell.textContent = headerText;
                 headerRow.appendChild(headerCell);
             });
+
+            // 创建表格主体
+            var tbody = table.createTBody();
 
             // 检查URL是否已经包含查询参数
             var separator = (url.indexOf('?') === -1) ? '?' : '&';
@@ -136,26 +409,118 @@
 
             // 填充表格数据
             var adPositions = ['Home页Banner', '官方账号', 'Discover广告位'];
-            adPositions.forEach(function(adPosition) {
-                var row = table.insertRow();
+            adPositions.forEach(function(adPosition, index) {
+                var row = tbody.insertRow();
                 var cellAdPosition = row.insertCell(0);
                 var cellOfficialUrl = row.insertCell(1);
                 var cellQnUrl = row.insertCell(2);
+                var cellActions = row.insertCell(3);
 
-                cellAdPosition.textContent = adPosition;
+                // 添加图标到广告位置
+                var icons = ['fas fa-home', 'fas fa-user-tie', 'fas fa-compass'];
+                cellAdPosition.innerHTML = `<i class="${icons[index]}" style="margin-right: 8px; color: var(--primary-color);"></i>${adPosition}`;
 
                 // 官方账号链接
                 var officialUrl = url + (baseQueryString ? separator + baseQueryString : '');
                 if (adPosition === 'Home页Banner') {
-                    officialUrl += '&web_cam=1';
+                    officialUrl += (baseQueryString ? '&' : separator) + 'web_cam=1';
                 }
-                cellOfficialUrl.textContent = officialUrl;
+                
+                // 高亮显示不同部分的URL
+                cellOfficialUrl.className = 'url-cell';
+                cellOfficialUrl.innerHTML = formatUrl(officialUrl);
+                cellOfficialUrl.title = "官网链接";
 
                 // 中台问卷链接
-                var qnUrl = adPosition === 'Home页Banner' ? officialUrl.replace('&web_cam=1', '&web_qn=1') : officialUrl;
-                cellQnUrl.textContent = qnUrl;
+                var qnUrl = '';
+                if (adPosition === 'Home页Banner') {
+                    qnUrl = officialUrl.replace('web_cam=1', 'web_qn=1');
+                } else {
+                    qnUrl = url + (baseQueryString ? separator + baseQueryString : '') + (baseQueryString ? '&' : separator) + 'web_qn=1';
+                }
+                
+                // 高亮显示不同部分的URL
+                cellQnUrl.className = 'url-cell';
+                cellQnUrl.innerHTML = formatUrl(qnUrl);
+                cellQnUrl.title = "问卷链接";
+
+                // 复制按钮
+                cellActions.innerHTML = `                    <button class="copy-btn" onclick="copyToClipboard('${officialUrl}', this)" title="复制官网链接">
+                        <i class="fas fa-copy"></i> 官网
+                    </button>
+                    <button class="copy-btn" onclick="copyToClipboard('${qnUrl}', this)" title="复制问卷链接">
+                        <i class="fas fa-copy"></i> 问卷
+                    </button>
+                `;
             });
         }
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(function() {
+                // 显示动画效果
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                button.parentElement.classList.add('highlight');
+                
+                setTimeout(function() {
+                    button.innerHTML = originalIcon;
+                    button.parentElement.classList.remove('highlight');
+                }, 1500);
+            }).catch(function(err) {
+                console.error('复制失败: ', err);
+                alert('复制失败，请手动复制链接');
+            });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const themeIcon = document.querySelector('.theme-switch i');
+            
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function formatUrl(url) {
+            // 分离域名和参数部分
+            let formattedUrl = url;
+            
+            // 替换域名部分
+            const domainMatch = url.match(/^(https?:\/\/[^/?#]+)/i);
+            if (domainMatch) {
+                const domain = domainMatch[1];
+                formattedUrl = formattedUrl.replace(domain, `<span class="highlight-domain">${domain}</span>`);
+            }
+            
+            // 高亮参数
+            const params = ['_utm_pro', 'web_cam', 'web_qn'];
+            params.forEach(param => {
+                const regex = new RegExp(`(${param}=[^&]+)`, 'g');
+                formattedUrl = formattedUrl.replace(regex, `<span class="highlight-param">$1</span>`);
+            });
+            
+            return formattedUrl;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置页脚年份
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // 恢复主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-switch i').className = 'fas fa-sun';
+            }
+        });
     </script>
 </body>
 </html>

@@ -4,318 +4,445 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>时区转换工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 全局样式 */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9; /* 浅灰色背景 */
-            color: #333;
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --input-border: #ddd;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #f2f8fd;
+            --table-border: #eaeaea;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition-speed: 0.3s;
         }
 
-        /* 标题 */
+        [data-theme="dark"] {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --bg-color: #1a1a1a;
+            --card-bg: #2c3e50;
+            --input-border: #34495e;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #34495e;
+            --table-border: #2c3e50;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .theme-switch {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-switch:hover {
+            transform: scale(1.1);
+        }
+
         h1 {
             font-size: 28px;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
-        /* 提示信息 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
         .hint {
+            color: var(--text-light);
+            font-size: 14px;
             margin-bottom: 20px;
-            color: #666;
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 按钮样式 */
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            color: #fff;
-            background-color: #007BFF;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin: 10px 0;
+        .hint i {
+            margin-right: 8px;
+            color: var(--primary-color);
         }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* 表格样式 */
         table {
             width: 100%;
-            max-width: 800px;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 15px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
         }
 
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--table-border);
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: var(--table-header);
             font-weight: 600;
-            color: #333;
+            color: var(--text-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
         }
 
         tr:hover {
-            background-color: #f9f9f9;
+            background-color: rgba(52, 152, 219, 0.05);
         }
 
-        /* 输入框样式 */
+        .time-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .time-icon {
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
         input[type="text"],
         input[type="datetime-local"] {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius);
             font-size: 14px;
-            transition: border-color 0.3s ease;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         input[type="text"]:focus,
         input[type="datetime-local"]:focus {
-            border-color: #007BFF;
+            border-color: var(--input-focus);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
 
-        /* 高亮最后修改的输入框 */
-        .last-modified {
-            border-color: #28a745;
-            background-color: #f8fff8;
+        .highlight {
+            border-color: var(--success-color);
+            animation: highlight 1s;
         }
 
-        /* 响应式设计 */
-        @media (max-width: 600px) {
+        @keyframes highlight {
+            0% { background-color: rgba(46, 204, 113, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            border-top: 1px solid var(--table-border);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+            
             h1 {
                 font-size: 24px;
             }
-            table {
+            
+            .time-icon {
+                margin-right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 10px 6px;
                 font-size: 14px;
             }
-            th, td {
-                padding: 8px;
+            
+            input[type="text"],
+            input[type="datetime-local"] {
+                padding: 10px;
+            }
+            
+            .time-icon {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <h1>时区转换工具</h1>
-    
-    <div class="hint">
-        <p>在任意时区行输入时间，点击"转换"按钮，即可查看其他时区对应时间</p>
+    <div class="container">
+        <header>
+            <button class="theme-switch" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+            <h1>全球时区转换工具</h1>
+            <div class="hint">
+                <i class="fas fa-info-circle"></i>
+                <p>在任意时区行输入时间，其他时区会自动联动更新（已支持夏令时）</p>
+            </div>
+        </header>
+
+        <div class="card">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>时区类型</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="time-row">
+                            <div class="time-icon"><i class="fas fa-clock"></i></div>
+                            时间戳 (毫秒)
+                        </td>
+                        <td><input type="text" id="timestamp-input" placeholder="例如: 1735704000000"></td>
+                    </tr>
+                    <tr>
+                        <td class="time-row">
+                            <div class="time-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            北京时间
+                        </td>
+                        <td><input type="datetime-local" id="beijing-input" step="1"></td>
+                    </tr>
+                    <tr>
+                        <td class="time-row">
+                            <div class="time-icon"><i class="fas fa-globe"></i></div>
+                            UTC 标准时间
+                        </td>
+                        <td><input type="datetime-local" id="utc-input" step="1"></td>
+                    </tr>
+                    <tr>
+                        <td class="time-row">
+                            <div class="time-icon"><i class="fas fa-building"></i></div>
+                            美国东部时间 (EST/EDT)
+                        </td>
+                        <td><input type="datetime-local" id="est-input" step="1"></td>
+                    </tr>
+                    <tr>
+                        <td class="time-row">
+                            <div class="time-icon"><i class="fas fa-city"></i></div>
+                            芝加哥时间 (CST/CDT)
+                        </td>
+                        <td><input type="datetime-local" id="cst-input" step="1"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <!-- &copy; <span id="year"></span> 时区转换工具 | 已支持夏令时自动计算 -->
+        </footer>
     </div>
-    
-    <button onclick="convertTime()">转换</button>
 
-    <!-- 结果表格 -->
-    <table id="resultsTable">
-        <thead>
-            <tr>
-                <th>类型</th>
-                <th>时间</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>时间戳 (毫秒)</td>
-                <td><input type="text" id="timestamp-input" placeholder="例如: 1735704000000" oninput="markAsLastModified(this)"></td>
-            </tr>
-            <tr>
-                <td>北京时间</td>
-                <td><input type="datetime-local" id="beijing-input" step="1" oninput="markAsLastModified(this)"></td>
-            </tr>
-            <tr>
-                <td>UTC 标准时间</td>
-                <td><input type="datetime-local" id="utc-input" step="1" oninput="markAsLastModified(this)"></td>
-            </tr>
-            <tr>
-                <td>美国东部时间 (EST)</td>
-                <td><input type="datetime-local" id="est-input" step="1" oninput="markAsLastModified(this)"></td>
-            </tr>
-            <tr>
-                <td>芝加哥时间 (CST)</td>
-                <td><input type="datetime-local" id="cst-input" step="1" oninput="markAsLastModified(this)"></td>
-            </tr>
-        </tbody>
-    </table>
-
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script>
-        // 记录最后修改的输入框
-        let lastModifiedInput = null;
-        
-        // 标记最后修改的输入框
-        function markAsLastModified(inputElement) {
-            // 移除之前的高亮
-            if (lastModifiedInput) {
-                lastModifiedInput.classList.remove('last-modified');
-            }
-            
-            // 设置新的最后修改输入框
-            lastModifiedInput = inputElement;
-            inputElement.classList.add('last-modified');
-        }
-        
-        // 页面加载时设置当前时间
-        window.onload = function() {
-            const now = new Date();
-            setDateTimeInputs(now);
-            
-            // 默认设置北京时间为最后修改
-            lastModifiedInput = document.getElementById("beijing-input");
-            lastModifiedInput.classList.add('last-modified');
+        const { DateTime } = luxon;
+        const zones = {
+            beijing: "Asia/Shanghai",
+            utc: "UTC",
+            est: "America/New_York",
+            cst: "America/Chicago"
         };
+        let isUpdating = false;
         
-        // 将Date对象格式化为datetime-local输入格式 (YYYY-MM-DDTHH:mm:ss)
-        function formatDateTimeLocal(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        function pad2(n) { return n.toString().padStart(2, '0'); }
+        
+        function toDatetimeLocal(dt) {
+            // luxon DateTime -> yyyy-MM-ddTHH:mm:ss
+            return dt.toFormat("yyyy-MM-dd'T'HH:mm:ss");
         }
         
-        // 设置所有datetime-local输入框的值
-        function setDateTimeInputs(date) {
-            document.getElementById("timestamp-input").value = date.getTime();
-            
-            // 为各时区设置datetime-local值
-            const beijingTime = new Date(date);
-            document.getElementById("beijing-input").value = formatDateTimeLocal(beijingTime);
-            
-            const utcTime = new Date(date);
-            document.getElementById("utc-input").value = formatDateTimeLocal(utcTime);
-            
-            const estTime = new Date(date);
-            document.getElementById("est-input").value = formatDateTimeLocal(estTime);
-            
-            const cstTime = new Date(date);
-            document.getElementById("cst-input").value = formatDateTimeLocal(cstTime);
-        }
-        
-        // 从datetime-local输入中解析日期
-        function parseDateTimeLocal(value, timeZoneOffset) {
-            if (!value) return null;
-            
-            // 创建基于本地时区的日期对象
-            const localDate = new Date(value);
-            if (isNaN(localDate.getTime())) return null;
-            
-            // 调整为UTC时间
-            const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
-            
-            // 调整为目标时区
-            return new Date(utcDate.getTime() + timeZoneOffset * 60000);
-        }
+        function onInputChange(e) {
+            if (isUpdating) return;
+            isUpdating = true;
+            const id = e.target.id;
+            let dtUTC = null;
+            if (id === 'timestamp-input') {
+                const val = e.target.value.trim();
+                if (!/^\d+$/.test(val)) { isUpdating = false; return; }
+                dtUTC = DateTime.fromMillis(Number(val), { zone: "UTC" });
+            } else {
+                let zone;
+                if (id === 'beijing-input') zone = zones.beijing;
+                if (id === 'utc-input') zone = zones.utc;
+                if (id === 'est-input') zone = zones.est;
+                if (id === 'cst-input') zone = zones.cst;
 
-        function convertTime() {
-            if (!lastModifiedInput) {
-                alert("请先在任意时区输入时间！");
-                return;
-            }
-            
-            let date;
-            
-            // 根据最后修改的输入框进行转换
-            switch (lastModifiedInput.id) {
-                case "timestamp-input":
-                    const timestampInput = lastModifiedInput.value.trim();
-                    if (!timestampInput || !/^\d+$/.test(timestampInput)) {
-                        alert("时间戳格式不正确，请输入数字！");
-                        return;
-                    }
-                    date = new Date(parseInt(timestampInput));
-                    break;
+                // 获取用户输入值，尝试多种方式解析
+                const inputValue = e.target.value;
+                
+                // 不同浏览器对datetime-local的格式要求不一样，尝试多种方式解析
+                try {
+                    // 首先尝试ISO格式解析
+                    dtUTC = DateTime.fromISO(inputValue, { zone }).toUTC();
                     
-                case "beijing-input":
-                    // 北京时间 (UTC+8)
-                    date = parseDateTimeLocal(lastModifiedInput.value, 8 * 60);
-                    if (!date) {
-                        alert("北京时间格式不正确！");
-                        return;
+                    // 如果解析失败或无效，尝试其他格式
+                    if (!dtUTC.isValid) {
+                        // 尝试带秒的格式 yyyy-MM-ddTHH:mm:ss
+                        dtUTC = DateTime.fromFormat(inputValue, "yyyy-MM-dd'T'HH:mm:ss", { zone }).toUTC();
+                        
+                        // 如果还是失败，尝试不带秒的格式 yyyy-MM-ddTHH:mm
+                        if (!dtUTC.isValid) {
+                            dtUTC = DateTime.fromFormat(inputValue, "yyyy-MM-dd'T'HH:mm", { zone }).toUTC();
+                        }
                     }
-                    break;
-                    
-                case "utc-input":
-                    // UTC时间
-                    date = parseDateTimeLocal(lastModifiedInput.value, 0);
-                    if (!date) {
-                        alert("UTC时间格式不正确！");
-                        return;
-                    }
-                    break;
-                    
-                case "est-input":
-                    // 美国东部时间 (UTC-5)
-                    date = parseDateTimeLocal(lastModifiedInput.value, -5 * 60);
-                    if (!date) {
-                        alert("美国东部时间格式不正确！");
-                        return;
-                    }
-                    break;
-                    
-                case "cst-input":
-                    // 芝加哥时间 (UTC-6)
-                    date = parseDateTimeLocal(lastModifiedInput.value, -6 * 60);
-                    if (!date) {
-                        alert("芝加哥时间格式不正确！");
-                        return;
-                    }
-                    break;
-                    
-                default:
-                    alert("未知的时间输入类型！");
+                } catch (error) {
+                    console.error("解析日期时间出错:", error);
+                    isUpdating = false;
                     return;
+                }
             }
-
-            if (isNaN(date.getTime())) {
-                alert("输入格式不正确，请检查后重试！");
-                return;
+            
+            if (!dtUTC || !dtUTC.isValid) { 
+                console.error("无法解析有效的日期时间:", e.target.value);
+                isUpdating = false;
+                return; 
             }
-
-            // 更新除最后修改的输入框外的所有输入框
-            updateOtherInputs(date);
+            
+            // 添加调试日志
+            console.log(`输入值: ${e.target.value}, 输入ID: ${id}, 解析后UTC时间: ${dtUTC.toISO()}`);
+            
+            // 更新所有输入框
+            document.getElementById('timestamp-input').value = dtUTC.toMillis();
+            
+            // 确保用户当前正在编辑的输入框值不变，其他输入框更新
+            document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+                if (input.id !== id) {
+                    const zoneKey = input.id.split('-')[0]; // 从id提取zone键名
+                    if (zones[zoneKey]) {
+                        input.value = toDatetimeLocal(dtUTC.setZone(zones[zoneKey]));
+                        // 添加高亮动画效果
+                        input.classList.add('highlight');
+                        setTimeout(() => input.classList.remove('highlight'), 1000);
+                    }
+                }
+            });
+            
+            isUpdating = false;
         }
         
-        // 更新除最后修改输入框外的所有其他输入框
-        function updateOtherInputs(date) {
-            // 时间戳输入框
-            if (lastModifiedInput.id !== "timestamp-input") {
-                document.getElementById("timestamp-input").value = date.getTime();
-            }
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const themeIcon = document.querySelector('.theme-switch i');
             
-            // 北京时间输入框
-            if (lastModifiedInput.id !== "beijing-input") {
-                document.getElementById("beijing-input").value = formatDateTimeLocal(date);
-            }
-            
-            // UTC时间输入框
-            if (lastModifiedInput.id !== "utc-input") {
-                document.getElementById("utc-input").value = formatDateTimeLocal(date);
-            }
-            
-            // EST时间输入框
-            if (lastModifiedInput.id !== "est-input") {
-                document.getElementById("est-input").value = formatDateTimeLocal(date);
-            }
-            
-            // CST时间输入框
-            if (lastModifiedInput.id !== "cst-input") {
-                document.getElementById("cst-input").value = formatDateTimeLocal(date);
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
             }
         }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置页脚年份
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // 恢复主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-switch i').className = 'fas fa-sun';
+            }
+            
+            // 默认填充当前时间
+            const now = DateTime.now().toUTC();
+            document.getElementById('timestamp-input').value = now.toMillis();
+            document.getElementById('beijing-input').value = toDatetimeLocal(now.setZone(zones.beijing));
+            document.getElementById('utc-input').value = toDatetimeLocal(now.setZone(zones.utc));
+            document.getElementById('est-input').value = toDatetimeLocal(now.setZone(zones.est));
+            document.getElementById('cst-input').value = toDatetimeLocal(now.setZone(zones.cst));
+            
+            // 绑定input和change事件，确保秒数为00时也能触发
+            const ids = ['timestamp-input','beijing-input','utc-input','est-input','cst-input'];
+            ids.forEach(function(id) {
+                document.getElementById(id).addEventListener('input', onInputChange);
+                document.getElementById(id).addEventListener('change', onInputChange);
+            });
+        });
     </script>
 </body>
 </html>

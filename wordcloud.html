@@ -1,47 +1,423 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>词云生成工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/echarts-wordcloud/2.1.0/echarts-wordcloud.min.js"></script>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --input-border: #ddd;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #f2f8fd;
+            --table-border: #eaeaea;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --bg-color: #1a1a1a;
+            --card-bg: #2c3e50;
+            --input-border: #34495e;
+            --input-focus: #3498db;
+            --success-color: #2ecc71;
+            --table-header: #34495e;
+            --table-border: #2c3e50;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
         .container {
-            width: 80%;
-            margin: 20px auto;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .theme-switch {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-switch:hover {
+            transform: scale(1.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .input-field {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--primary-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--input-focus);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 2px dashed var(--input-border);
+            border-radius: var(--radius);
+            background-color: var(--secondary-color);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: var(--text-color);
             text-align: center;
         }
+
+        .upload-hint {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .wordcloud-container {
+            width: 100%;
+            padding-top: 20px;
+            border-top: 1px solid var(--table-border);
+            margin-top: 20px;
+            position: relative;
+        }
+
         #wordcloud {
-            width: 800px;
+            width: 100%;
             height: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--success-color);
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            border-top: 1px solid var(--table-border);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading i {
+            color: var(--primary-color);
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            #wordcloud {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #wordcloud {
+                height: 350px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>词云生成工具</h1>
-        <input type="file" id="fileInput" accept=".xlsx,.xls">
-        <div>
-            <input type="text" id="fixedWords" placeholder="请输入固定词组，用逗号分隔" style="width: 300px; margin: 10px;">
+        <header>
+            <button class="theme-switch" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+            <h1>词云生成工具</h1>
+            <p class="subtitle">从Excel文件中快速生成精美词云图</p>
+        </header>
+
+        <div class="card">
+            <div class="form-group">
+                <label><i class="fas fa-file-excel"></i> 上传Excel文件</label>
+                <div class="file-upload" id="upload-area">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p class="upload-text">点击或拖拽Excel文件到此处</p>
+                    <p class="upload-hint">支持.xlsx和.xls格式</p>
+                    <p class="file-name" id="file-name"></p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="fixedWords"><i class="fas fa-thumbtack"></i> 固定词组 (可选)</label>
+                <div class="input-field">
+                    <i class="fas fa-tags input-icon"></i>
+                    <input type="text" id="fixedWords" class="form-control" placeholder="请输入固定词组，用逗号分隔">
+                </div>
+                <p class="upload-hint">这些词组将被作为整体处理，例如: 人工智能,机器学习,深度学习</p>
+            </div>
+
+            <div class="form-group">
+                <label for="stopwords"><i class="fas fa-ban"></i> 停用词 (可选)</label>
+                <div class="input-field">
+                    <i class="fas fa-filter input-icon"></i>
+                    <input type="text" id="stopwords" class="form-control" placeholder="请输入停用词，用逗号分隔">
+                </div>
+                <p class="upload-hint">这些词将被排除，不会显示在词云中，例如: 的,了,是,在,和</p>
+            </div>
+
+            <div class="button-group">
+                <button id="generateBtn" class="btn" disabled>
+                    <i class="fas fa-magic"></i> 生成词云
+                </button>
+                <button id="downloadBtn" class="btn" disabled>
+                    <i class="fas fa-download"></i> 下载词云图
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner"></i>
+                <p>正在生成词云...</p>
+            </div>
         </div>
-        <div>
-            <input type="text" id="stopwords" placeholder="请输入停用词，用逗号分隔" style="width: 300px; margin: 10px;">
+
+        <div class="card" id="result-card" style="display: none;">
+            <div class="wordcloud-container">
+                <div id="wordcloud"></div>
+            </div>
         </div>
-        <button id="generateBtn" style="margin: 10px; padding: 5px 15px;">生成词云</button>
-        <button id="downloadBtn" style="margin: 10px; padding: 5px 15px;" disabled>下载词云图</button>
-        <div id="wordcloud"></div>
+
+        <footer>
+            <!-- &copy; <span id="year"></span> 词云生成工具 | 轻松可视化文本数据 -->
+        </footer>
     </div>
 
     <script>
         let chart = null; // 保存图表实例
         let workbookData = null;
+        const fileNameDisplay = document.getElementById('file-name');
+        const uploadArea = document.getElementById('upload-area');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultCard = document.getElementById('result-card');
+        const loading = document.getElementById('loading');
 
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const reader = new FileReader();
+            if (!file) return;
 
+            // 显示文件名
+            fileNameDisplay.textContent = `已选择: ${file.name}`;
+            fileNameDisplay.style.display = 'block';
+            
+            // 更改上传区域样式
+            uploadArea.style.borderColor = 'var(--success-color)';
+            
+            // 启用生成按钮
+            generateBtn.disabled = false;
+
+            const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 workbookData = XLSX.read(data, {type: 'array'});
@@ -56,116 +432,170 @@
                 return;
             }
 
-            // 获取固定词组列表
-            const fixedWordsInput = document.getElementById('fixedWords').value;
-            const fixedWords = fixedWordsInput.split(',')
-                .map(word => word.trim())
-                .filter(word => word)
-                .sort((a, b) => b.length - a.length); // 按长度降序排序，确保更长的词组先被替换
-
-            // 获取停用词列表
-            const stopwordsInput = document.getElementById('stopwords').value;
-            const stopwords = stopwordsInput.split(',').map(word => word.trim()).filter(word => word);
+            // 显示加载动画
+            loading.style.display = 'block';
+            // 隐藏结果区域
+            resultCard.style.display = 'none';
             
-            // 获取第一个工作表
-            const firstSheet = workbookData.Sheets[workbookData.SheetNames[0]];
-            // 转换为文本数组
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-            
-            // 合并所有文本
-            let allText = '';
-            jsonData.forEach(row => {
-                row.forEach(cell => {
-                    if(cell) allText += cell.toString() + ' ';
-                });
-            });
-
-            // 使用特殊标记替换固定词组
-            const replacements = new Map();
-            fixedWords.forEach((word, index) => {
-                const placeholder = `___FIXED_${index}___`;
-                const regex = new RegExp(word, 'g');
-                allText = allText.replace(regex, placeholder);
-                replacements.set(placeholder, word);
-            });
-
-            // 分词并过滤停用词
-            const words = allText.split(/\s+/).map(word => {
-                // 还原特殊标记为原始词组
-                if (word.startsWith('___FIXED_')) {
-                    return replacements.get(word) || word;
-                }
-                return word.toLowerCase(); // 将英文单词转换为小写
-            }).filter(word => {
-                return word && !stopwords.includes(word.toLowerCase()); // 停用词检查也不区分大小写
-            });
-            
-            // 统计词频
-            const wordCount = {};
-            words.forEach(word => {
-                if(word) {
-                    wordCount[word] = (wordCount[word] || 0) + 1;
-                }
-            });
-
-            // 转换数据格式为词云所需的格式
-            const wordcloudData = Object.entries(wordCount).map(([name, value]) => ({
-                name,
-                value
-            }));
-
-            // 初始化词云图
-            if (chart) {
-                chart.dispose(); // 如果已存在图表实例，先销毁
-            }
-            chart = echarts.init(document.getElementById('wordcloud'));
-            const option = {
-                tooltip: {
-                    show: true,
-                    formatter: function(params) {
-                        return `${params.name}: ${params.value}次`;
-                    }
-                },
-                series: [{
-                    type: 'wordCloud',
-                    shape: 'circle',
-                    left: 'center',
-                    top: 'center',
-                    width: '70%',
-                    height: '80%',
-                    right: null,
-                    bottom: null,
-                    sizeRange: [12, 60],
-                    rotationRange: [-90, 90],
-                    rotationStep: 45,
-                    gridSize: 8,
-                    drawOutOfBound: false,
-                    textStyle: {
-                        fontFamily: 'sans-serif',
-                        fontWeight: 'bold',
-                        color: function () {
-                            return 'rgb(' + [
-                                Math.round(Math.random() * 160),
-                                Math.round(Math.random() * 160),
-                                Math.round(Math.random() * 160)
-                            ].join(',') + ')';
-                        }
-                    },
-                    emphasis: {
-                        focus: 'self',
-                        textStyle: {
-                            shadowBlur: 10,
-                            shadowColor: '#333'
-                        }
-                    },
-                    data: wordcloudData
-                }]
-            };
-            chart.setOption(option);
-
-            // 启用下载按钮
-            document.getElementById('downloadBtn').disabled = false;
+            // 使用setTimeout来允许UI更新
+            setTimeout(generateWordCloud, 100);
         });
+
+        function generateWordCloud() {
+            try {
+                // 获取固定词组列表
+                const fixedWordsInput = document.getElementById('fixedWords').value;
+                const fixedWords = fixedWordsInput.split(',')
+                    .map(word => word.trim())
+                    .filter(word => word)
+                    .sort((a, b) => b.length - a.length); // 按长度降序排序，确保更长的词组先被替换
+
+                // 获取停用词列表
+                const stopwordsInput = document.getElementById('stopwords').value;
+                const stopwords = stopwordsInput.split(',').map(word => word.trim()).filter(word => word);
+                
+                // 获取第一个工作表
+                const firstSheet = workbookData.Sheets[workbookData.SheetNames[0]];
+                // 转换为文本数组
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                // 合并所有文本
+                let allText = '';
+                jsonData.forEach(row => {
+                    row.forEach(cell => {
+                        if(cell) allText += cell.toString() + ' ';
+                    });
+                });
+
+                // 使用特殊标记替换固定词组
+                const replacements = new Map();
+                fixedWords.forEach((word, index) => {
+                    const placeholder = `___FIXED_${index}___`;
+                    const regex = new RegExp(word, 'g');
+                    allText = allText.replace(regex, placeholder);
+                    replacements.set(placeholder, word);
+                });
+
+                // 分词并过滤停用词
+                const words = allText.split(/\s+/).map(word => {
+                    // 还原特殊标记为原始词组
+                    if (word.startsWith('___FIXED_')) {
+                        return replacements.get(word) || word;
+                    }
+                    return word.toLowerCase(); // 将英文单词转换为小写
+                }).filter(word => {
+                    return word && !stopwords.includes(word.toLowerCase()); // 停用词检查也不区分大小写
+                });
+                
+                // 统计词频
+                const wordCount = {};
+                words.forEach(word => {
+                    if(word) {
+                        wordCount[word] = (wordCount[word] || 0) + 1;
+                    }
+                });
+
+                // 转换数据格式为词云所需的格式
+                const wordcloudData = Object.entries(wordCount).map(([name, value]) => ({
+                    name,
+                    value
+                }));
+
+                // 初始化词云图
+                if (chart) {
+                    chart.dispose(); // 如果已存在图表实例，先销毁
+                }
+                
+                // 检查主题以设置合适的背景色
+                const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+                const bgColor = isDarkMode ? '#2c3e50' : '#fff';
+                
+                chart = echarts.init(document.getElementById('wordcloud'));
+                const option = {
+                    tooltip: {
+                        show: true,
+                        formatter: function(params) {
+                            return `${params.name}: ${params.value}次`;
+                        }
+                    },
+                    series: [{
+                        type: 'wordCloud',
+                        shape: 'circle',
+                        left: 'center',
+                        top: 'center',
+                        width: '80%',  // 调整宽度
+                        height: '80%', // 调整高度
+                        right: null,
+                        bottom: null,
+                        sizeRange: [12, 50], // 调整字体大小范围
+                        rotationRange: [-45, 45], // 减小旋转角度
+                        rotationStep: 10,
+                        gridSize: 12, // 增加网格大小，减少单位面积内的词数量
+                        layoutAnimation: true, // 启用布局动画
+                        drawOutOfBound: false,
+                        textStyle: {
+                            fontFamily: 'sans-serif',
+                            fontWeight: 'bold',
+                            color: function () {
+                                // 深色模式下使用亮色调
+                                if (isDarkMode) {
+                                    return 'rgb(' + [
+                                        Math.round(Math.random() * 80 + 160),
+                                        Math.round(Math.random() * 80 + 160),
+                                        Math.round(Math.random() * 80 + 160)
+                                    ].join(',') + ')';
+                                } else {
+                                    return 'rgb(' + [
+                                        Math.round(Math.random() * 160),
+                                        Math.round(Math.random() * 160),
+                                        Math.round(Math.random() * 160)
+                                    ].join(',') + ')';
+                                }
+                            }
+                        },
+                        emphasis: {
+                            focus: 'self',
+                            textStyle: {
+                                shadowBlur: 10,
+                                shadowColor: isDarkMode ? '#000' : '#333'
+                            }
+                        },
+                        data: wordcloudData
+                    }]
+                };
+                chart.setOption(option);
+
+                // 隐藏加载动画
+                loading.style.display = 'none';
+                // 显示结果卡片
+                resultCard.style.display = 'block';
+                // 滚动到结果区域
+                resultCard.scrollIntoView({ behavior: 'smooth' });
+                // 启用下载按钮
+                document.getElementById('downloadBtn').disabled = false;
+                
+                // 确保完全渲染
+                setTimeout(() => {
+                    chart.resize();
+                    // 二次渲染以确保所有词都显示
+                    setTimeout(() => {
+                        chart.resize();
+                    }, 300);
+                }, 100);
+                
+                // 监听窗口大小变化
+                window.addEventListener('resize', function() {
+                    if (chart) {
+                        chart.resize();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('生成词云时出错:', error);
+                alert('生成词云时出错: ' + error.message);
+                loading.style.display = 'none';
+            }
+        }
 
         document.getElementById('downloadBtn').addEventListener('click', function() {
             if (!chart) {
@@ -177,7 +607,7 @@
             const url = chart.getDataURL({
                 type: 'png',
                 pixelRatio: 2, // 提高导出图片的清晰度
-                backgroundColor: '#fff' // 设置背景色为白色
+                backgroundColor: document.body.getAttribute('data-theme') === 'dark' ? '#2c3e50' : '#fff' // 设置背景色与主题一致
             });
 
             // 创建下载链接
@@ -187,6 +617,94 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        });
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const themeIcon = document.querySelector('.theme-switch i');
+            
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // 如果词云已生成，则重新调整以适应主题
+            if (chart) {
+                // 先调整大小
+                chart.resize();
+                
+                // 延迟重新生成以确保DOM已更新
+                setTimeout(() => {
+                    generateWordCloud();
+                }, 200);
+            }
+        }
+
+        // 页面加载时处理拖放区域样式
+        const uploadInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('upload-area');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.style.borderColor = 'var(--primary-color)';
+            dropArea.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+        }
+
+        function unhighlight() {
+            dropArea.style.borderColor = 'var(--input-border)';
+            dropArea.style.backgroundColor = 'var(--secondary-color)';
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length && (files[0].name.endsWith('.xlsx') || files[0].name.endsWith('.xls'))) {
+                uploadInput.files = files;
+                // 触发change事件
+                const event = new Event('change', { bubbles: true });
+                uploadInput.dispatchEvent(event);
+            } else {
+                alert('请上传Excel文件 (.xlsx 或 .xls)');
+                unhighlight();
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置页脚年份
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // 恢复主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-switch i').className = 'fas fa-sun';
+            }
         });
     </script>
 </body>
